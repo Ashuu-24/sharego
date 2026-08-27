@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+
+{% block title %}Bookings{% endblock %}
+{% block heading %}Booking Management{% endblock %}
+
+{% block content %}
+<div class="panel">
+  <div class="panel-header">
+    All Bookings
+    <span class="text-muted">{{ bookings | length }} total</span>
+  </div>
+  {% if bookings %}
+  <table>
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Trip</th>
+        <th>Request</th>
+        <th>Status</th>
+        <th>Escrow</th>
+        <th>Created</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for b in bookings %}
+      <tr>
+        <td class="mono">#{{ b.id }}</td>
+        <td class="mono">#{{ b.trip_id }}</td>
+        <td class="mono">#{{ b.request_id }}</td>
+        <td><span class="badge badge-{{ b.status | lower }}">{{ b.status }}</span></td>
+        <td>
+          {% if b.escrow_status %}
+            <span class="badge badge-{{ b.escrow_status | lower }}">{{ b.escrow_status }}</span>
+            {% if b.escrow_amount %}
+              <span class="text-muted">PKR {{ "%.0f" | format(b.escrow_amount) }}</span>
+            {% endif %}
+          {% else %}
+            <span class="text-muted">—</span>
+          {% endif %}
+        </td>
+        <td class="text-muted">{{ b.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+        <td>
+          {% if b.status == 'DELIVERY_OK' and b.escrow_status == 'hold' %}
+            <form class="inline-form" method="POST" action="/admin/booking-action/{{ b.id }}/release">
+              <button type="submit" class="btn btn-release btn-sm">Release</button>
+            </form>
+          {% endif %}
+          {% if b.status in ('CANCELLED', 'EXPIRED') and b.escrow_status == 'hold' %}
+            <form class="inline-form" method="POST" action="/admin/booking-action/{{ b.id }}/refund">
+              <button type="submit" class="btn btn-refund btn-sm">Refund</button>
+            </form>
+          {% endif %}
+          <a href="/admin/booking-detail/{{ b.id }}" class="btn btn-sm" style="background:#64748b;color:#fff;text-decoration:none;margin-left:4px;">View</a>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <div class="empty">No bookings yet.</div>
+  {% endif %}
+</div>
+
+<!-- Handover events -->
+<div class="panel">
+  <div class="panel-header">Recent Handover Events</div>
+  {% if handover_events %}
+  <table>
+    <thead>
+      <tr>
+        <th>Booking</th>
+        <th>Type</th>
+        <th>GPS</th>
+        <th>Seal ID</th>
+        <th>Timestamp</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for h in handover_events %}
+      <tr>
+        <td class="mono">#{{ h.booking_id }}</td>
+        <td><span class="badge badge-{{ h.type | lower }}">{{ h.type }}</span></td>
+        <td class="mono text-muted">
+          {% if h.gps_lat %}{{ "%.4f" | format(h.gps_lat) }}, {{ "%.4f" | format(h.gps_lng) }}{% else %}—{% endif %}
+        </td>
+        <td class="mono">{{ h.seal_id or '—' }}</td>
+        <td class="text-muted">{{ h.ts.strftime('%Y-%m-%d %H:%M') }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <div class="empty">No handover events recorded.</div>
+  {% endif %}
+</div>
+{% endblock %}

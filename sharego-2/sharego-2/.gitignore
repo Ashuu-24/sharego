@@ -1,0 +1,68 @@
+# OS / Editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+
+# Python
+**/__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Virtualenvs
+.venv/
+venv/
+server/venv/
+
+# Local env files
+.env
+*.env.local
+mobile/.env
+server/.env
+
+# SQLite runtime files
+server/*.db
+server/*.db-shm
+server/*.db-wal
+
+# Runtime media/static outputs
+server/media/
+server/static/
+
+# Flutter / Dart build artifacts
+mobile/.dart_tool/
+mobile/.flutter-plugins-dependencies
+mobile/.pub/
+mobile/.pub-cache/
+mobile/build/
+
+# Firebase/admin secrets
+*firebase-adminsdk*.json
+**/*firebase-adminsdk*.json
+**/*-adminsdk-*.json
+mobile/android/app/google-services.json
+mobile/ios/Runner/GoogleService-Info.plist
+
+# Claude / AI assistant local files
+.claude/
+**/.claude/
+CLAUDE.md
+CLAUDE.local.md
+claude.md
+claude.local.md
+
+# iOS CocoaPods
+mobile/ios/Pods/
+
+__MACOSX/
+.DS_Store
+**/.DS_Store
+**/Pods/
+*.db
+*.db-shm
+*.db-wal
+.env

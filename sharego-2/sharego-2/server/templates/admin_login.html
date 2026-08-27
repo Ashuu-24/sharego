@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Login - Flyro</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      background: linear-gradient(135deg, #E7EDEF, #E7EDEF 55%, #E7EDEF);
+      font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+      color: #040406;
+    }
+    .card {
+      width: min(420px, 92vw);
+      background: #ffffff;
+      border: 1px solid #114550;
+      border-radius: 12px;
+      padding: 1.5rem;
+      box-shadow: 0 12px 28px rgba(17, 69, 80, 0.08);
+    }
+    h1 {
+      margin: 0 0 .35rem;
+      font-size: 1.35rem;
+      color: #114550;
+    }
+    .sub {
+      margin: 0 0 1rem;
+      color: #114550;
+      font-size: .9rem;
+    }
+    label {
+      display: block;
+      font-size: .83rem;
+      font-weight: 600;
+      margin-bottom: .35rem;
+      color: #114550;
+    }
+    input {
+      width: 100%;
+      padding: .65rem .7rem;
+      border: 1px solid #114550;
+      border-radius: .5rem;
+      margin-bottom: .85rem;
+      font-size: .92rem;
+      outline: none;
+    }
+    input:focus {
+      border-color: #114550;
+      box-shadow: 0 0 0 3px rgba(17, 69, 80, 0.12);
+    }
+    .btn {
+      width: 100%;
+      border: 0;
+      background: #114550;
+      color: #fff;
+      border-radius: .55rem;
+      padding: .7rem .8rem;
+      font-weight: 700;
+      cursor: pointer;
+      font-size: .9rem;
+    }
+    .btn:hover {
+      background: #0D353F;
+    }
+    .error {
+      background: #fee2e2;
+      color: #7f1d1d;
+      border: 1px solid #fecaca;
+      border-radius: .5rem;
+      padding: .55rem .65rem;
+      margin-bottom: .8rem;
+      font-size: .84rem;
+    }
+    .env {
+      margin-top: .85rem;
+      font-size: .75rem;
+      color: #114550;
+      text-transform: uppercase;
+      letter-spacing: .4px;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <main class="card">
+    <h1>Flyro Admin</h1>
+    <p class="sub">Sign in with an admin or ops account.</p>
+    {% if error %}
+      <div class="error">{{ error }}</div>
+    {% endif %}
+    <form method="post" action="/admin/login">
+      <input type="hidden" name="next" value="{{ next }}">
+      <label for="email">Email</label>
+      <input id="email" name="email" type="email" autocomplete="username" required>
+
+      <label for="password">Password</label>
+      <input id="password" name="password" type="password" autocomplete="current-password" required>
+
+      <button class="btn" type="submit">Sign In</button>
+    </form>
+    <p class="env">{{ env }} environment</p>
+  </main>
+</body>
+</html>
+

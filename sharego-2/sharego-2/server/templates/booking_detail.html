@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+
+{% block title %}Booking #{{ booking.id }}{% endblock %}
+{% block heading %}Booking #{{ booking.id }} Detail{% endblock %}
+
+{% block content %}
+<!-- Booking Info -->
+<div class="panel">
+  <div class="panel-header">Booking Information</div>
+  <table>
+    <tbody>
+      <tr><th style="width:160px">Status</th><td><span class="badge badge-{{ booking.status | lower }}">{{ booking.status }}</span></td></tr>
+      <tr><th>Trip</th><td class="mono">#{{ booking.trip_id }}</td></tr>
+      <tr><th>Request</th><td class="mono">#{{ booking.request_id }}</td></tr>
+      <tr><th>Traveler</th><td>{{ traveler_name }}</td></tr>
+      <tr><th>Buyer</th><td>{{ buyer_name }}</td></tr>
+      <tr><th>Waybill</th><td class="mono">{{ booking.waybill or '---' }}</td></tr>
+      {% if escrow %}
+      <tr><th>Escrow</th><td><span class="badge badge-{{ escrow.status | lower }}">{{ escrow.status }}</span> PKR {{ "%.0f" | format(escrow.amount) }}</td></tr>
+      {% endif %}
+      <tr><th>Created</th><td class="text-muted">{{ booking.created_at.strftime('%Y-%m-%d %H:%M') }}</td></tr>
+      <tr><th>Updated</th><td class="text-muted">{{ booking.updated_at.strftime('%Y-%m-%d %H:%M') }}</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- Traveler Status Updates -->
+<div class="panel">
+  <div class="panel-header">
+    Traveler Status Updates
+    <span class="text-muted">{{ updates | length }} update{{ 's' if updates | length != 1 else '' }}</span>
+  </div>
+  {% if updates %}
+  <table>
+    <thead>
+      <tr><th>Type</th><th>Note</th><th>By</th><th>Time</th></tr>
+    </thead>
+    <tbody>
+      {% for u in updates %}
+      <tr>
+        <td><span class="badge badge-accepted">{{ u.update_type | replace('_', ' ') | title }}</span></td>
+        <td>{{ u.note or '---' }}</td>
+        <td>{{ u.user_name }}</td>
+        <td class="text-muted">{{ u.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <div class="empty">No status updates posted by traveler.</div>
+  {% endif %}
+</div>
+
+<!-- Conversation -->
+<div class="panel">
+  <div class="panel-header">
+    Booking Conversation
+    <span class="text-muted">{{ messages | length }} message{{ 's' if messages | length != 1 else '' }}</span>
+  </div>
+  {% if messages %}
+  <div style="padding: 1rem; max-height: 500px; overflow-y: auto;">
+    {% for m in messages %}
+    <div style="margin-bottom: .75rem; padding: .6rem 1rem; background: #f8fafc; border-radius: .5rem; border-left: 3px solid #84AEFE;">
+      <div style="font-size: .75rem; color: #64748b;">
+        <strong>{{ m.sender_name }}</strong> &rarr; {{ m.receiver_name }}
+        &middot; {{ m.created_at.strftime('%Y-%m-%d %H:%M') }}
+        {% if m.read_at %}<span style="color:#22c55e;"> (read)</span>{% endif %}
+      </div>
+      <div style="margin-top: .25rem; font-size: .85rem;">{{ m.content }}</div>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="empty">No messages linked to this booking.</div>
+  {% endif %}
+</div>
+
+<div style="margin-top: 1rem;">
+  <a href="/admin/bookings" class="btn" style="background:#64748b;color:#fff;">&larr; Back to Bookings</a>
+</div>
+{% endblock %}

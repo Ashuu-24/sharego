@@ -1,0 +1,111 @@
+{% extends "base.html" %}
+
+{% block title %}Wallets{% endblock %}
+{% block heading %}Wallet Management{% endblock %}
+
+{% block content %}
+<!-- KPI Cards -->
+<div class="kpi-grid">
+  <div class="kpi-card">
+    <div class="label">Total System Balance</div>
+    <div class="value">PKR {{ "%.0f" | format(kpi.total_balance) }}</div>
+  </div>
+  <div class="kpi-card">
+    <div class="label">In Escrow Hold</div>
+    <div class="value" style="color:#d97706">PKR {{ "%.0f" | format(kpi.total_hold) }}</div>
+  </div>
+  <div class="kpi-card">
+    <div class="label">Total Released</div>
+    <div class="value" style="color:#772AB7">PKR {{ "%.0f" | format(kpi.total_released) }}</div>
+  </div>
+  <div class="kpi-card">
+    <div class="label">Total Refunded</div>
+    <div class="value" style="color:#2563eb">PKR {{ "%.0f" | format(kpi.total_refunded) }}</div>
+  </div>
+</div>
+
+<!-- User Balances -->
+<div class="panel">
+  <div class="panel-header">
+    User Balances
+    <span class="text-muted">{{ user_balances | length }} users</span>
+  </div>
+  {% if user_balances %}
+  <table>
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Name</th>
+        <th>Email</th>
+        <th>Balance (PKR)</th>
+        <th>Top-Up</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for u in user_balances %}
+      <tr>
+        <td class="mono">#{{ u.id }}</td>
+        <td>{{ u.name }}</td>
+        <td class="mono">{{ u.email }}</td>
+        <td>
+          <strong {% if u.balance > 0 %}style="color:#059669"{% elif u.balance < 0 %}style="color:#dc2626"{% endif %}>
+            PKR {{ "%.0f" | format(u.balance) }}
+          </strong>
+        </td>
+        <td>
+          <form class="inline-form" method="POST" action="/admin/wallet-action/{{ u.id }}/topup" style="display:flex;gap:.3rem;align-items:center">
+            <input type="number" name="amount" placeholder="Amount" min="1" style="width:90px;padding:.25rem .4rem;border:1px solid #cbd5e1;border-radius:.3rem;font-size:.78rem">
+            <button type="submit" class="btn btn-release btn-sm">Top-Up</button>
+          </form>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <div class="empty">No users found.</div>
+  {% endif %}
+</div>
+
+<!-- Recent Transactions -->
+<div class="panel">
+  <div class="panel-header">
+    Recent Transactions
+    <span class="text-muted">Last 30</span>
+  </div>
+  {% if recent_entries %}
+  <table>
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>User</th>
+        <th>Amount</th>
+        <th>Balance After</th>
+        <th>Reason</th>
+        <th>Ref</th>
+        <th>Time</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for e in recent_entries %}
+      <tr>
+        <td class="mono">#{{ e.id }}</td>
+        <td>{{ e.user_name }}</td>
+        <td>
+          <strong {% if e.delta > 0 %}style="color:#059669"{% else %}style="color:#dc2626"{% endif %}>
+            {% if e.delta > 0 %}+{% endif %}PKR {{ "%.0f" | format(e.delta) }}
+          </strong>
+        </td>
+        <td class="mono">PKR {{ "%.0f" | format(e.balance_after) }}</td>
+        <td><span class="badge badge-{{ e.reason | lower }}">{{ e.reason }}</span></td>
+        <td class="mono text-muted">{{ e.ref_id or '—' }}</td>
+        <td class="text-muted">{{ e.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <div class="empty">No wallet transactions yet.</div>
+  {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+
+{% block title %}Audit Logs{% endblock %}
+{% block heading %}Audit Logs{% endblock %}
+
+{% block content %}
+<!-- Filters -->
+<div class="panel" style="margin-bottom: 1.5rem;">
+  <div class="panel-header">Filters</div>
+  <div style="padding: 1rem 1.25rem;">
+    <form method="GET" action="/admin/audit" style="display:flex; gap:.75rem; align-items:flex-end; flex-wrap:wrap;">
+      <div>
+        <label style="font-size:.75rem; color:#64748b; display:block; margin-bottom:.25rem;">Action</label>
+        <select name="action" style="padding:.4rem .6rem; border:1px solid #e2e8f0; border-radius:.35rem; font-size:.85rem; width:160px;">
+          <option value="">All actions</option>
+          {% for a in available_actions %}
+          <option value="{{ a }}" {% if filter_action == a %}selected{% endif %}>{{ a }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div>
+        <label style="font-size:.75rem; color:#64748b; display:block; margin-bottom:.25rem;">Admin</label>
+        <select name="actor" style="padding:.4rem .6rem; border:1px solid #e2e8f0; border-radius:.35rem; font-size:.85rem; width:200px;">
+          <option value="">All admins</option>
+          {% for a in available_actors %}
+          <option value="{{ a }}" {% if filter_actor == a %}selected{% endif %}>{{ a }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div>
+        <label style="font-size:.75rem; color:#64748b; display:block; margin-bottom:.25rem;">Entity</label>
+        <input name="entity" value="{{ filter_entity or '' }}" placeholder="e.g. booking"
+               style="padding:.4rem .6rem; border:1px solid #e2e8f0; border-radius:.35rem; font-size:.85rem; width:150px;">
+      </div>
+      <button type="submit" class="btn btn-release">Apply</button>
+      <a href="/admin/audit" class="btn" style="background:#f1f5f9; color:#475569;">Clear</a>
+    </form>
+  </div>
+</div>
+
+<div class="panel">
+  <div class="panel-header">
+    Audit Events
+    <span class="text-muted">{{ total }} total &middot; page {{ page }} of {{ total_pages }}</span>
+  </div>
+  {% if logs %}
+  <table>
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Timestamp</th>
+        <th>Actor</th>
+        <th>Action</th>
+        <th>Entity</th>
+        <th>Before</th>
+        <th>After</th>
+        <th>Request ID</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for log in logs %}
+      <tr>
+        <td class="mono">#{{ log.id }}</td>
+        <td class="text-muted">{{ log.ts.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+        <td class="mono">{{ log.actor or '—' }}</td>
+        <td><span class="badge badge-hold">{{ log.action }}</span></td>
+        <td class="mono">{{ log.entity }}</td>
+        <td class="mono text-muted" style="max-width:180px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
+          {{ log.before or '—' }}
+        </td>
+        <td class="mono text-muted" style="max-width:180px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
+          {{ log.after or '—' }}
+        </td>
+        <td class="mono text-muted" style="font-size:.7rem;">{{ log.request_id or '—' }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <div class="empty">No audit events match your filters.</div>
+  {% endif %}
+
+  {% if total_pages > 1 %}
+  <div style="padding: .75rem 1.25rem; border-top: 1px solid #e2e8f0; display:flex; justify-content:center; gap:.5rem;">
+    {% if current_page > 1 %}
+    <a href="/admin/audit?page={{ current_page - 1 }}{% if filter_action %}&action={{ filter_action }}{% endif %}{% if filter_actor %}&actor={{ filter_actor }}{% endif %}{% if filter_entity %}&entity={{ filter_entity }}{% endif %}"
+       class="btn" style="background:#f1f5f9; color:#475569;">&laquo; Previous</a>
+    {% endif %}
+    <span class="text-muted" style="padding:.35rem .5rem;">Page {{ current_page }} of {{ total_pages }}</span>
+    {% if current_page < total_pages %}
+    <a href="/admin/audit?page={{ current_page + 1 }}{% if filter_action %}&action={{ filter_action }}{% endif %}{% if filter_actor %}&actor={{ filter_actor }}{% endif %}{% if filter_entity %}&entity={{ filter_entity }}{% endif %}"
+       class="btn" style="background:#f1f5f9; color:#475569;">Next &raquo;</a>
+    {% endif %}
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

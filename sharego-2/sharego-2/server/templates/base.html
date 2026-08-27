@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}Admin{% endblock %} — Flyro</title>
+  <style>
+    /* ── Reset & base ─────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background: #E7EDEF;
+      color: #040406;
+      display: flex;
+      min-height: 100vh;
+    }
+
+    /* ── Sidebar ──────────────────────────────────────── */
+    .sidebar {
+      width: 240px;
+      background: #114550;
+      color: #E7EDEF;
+      padding: 1.5rem 0;
+      flex-shrink: 0;
+      display: flex;
+      flex-direction: column;
+    }
+    .sidebar .brand {
+      padding: 0 1.25rem 1.5rem;
+      border-bottom: 1px solid #0D353F;
+      margin-bottom: .75rem;
+    }
+    .sidebar .brand h1 {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: #E7EDEF;
+      letter-spacing: .5px;
+    }
+    .sidebar .brand span {
+      font-size: .7rem;
+      color: #E7EDEF;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+    .sidebar nav { flex: 1; }
+    .sidebar nav a {
+      display: flex;
+      align-items: center;
+      gap: .6rem;
+      padding: .65rem 1.25rem;
+      color: #E7EDEF;
+      text-decoration: none;
+      font-size: .85rem;
+      border-left: 3px solid transparent;
+      transition: all .15s;
+    }
+    .sidebar nav a:hover {
+      background: #0D353F;
+      color: #E7EDEF;
+    }
+    .sidebar nav a.active {
+      background: #0D353F;
+      color: #E7EDEF;
+      border-left-color: #E7EDEF;
+      font-weight: 600;
+    }
+    .sidebar nav a .icon { font-size: 1rem; width: 20px; text-align: center; }
+
+    /* ── Main content ─────────────────────────────────── */
+    .main { flex: 1; display: flex; flex-direction: column; }
+    .topbar {
+      background: #E7EDEF;
+      padding: .75rem 2rem;
+      border-bottom: 1px solid #114550;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .topbar h2 { font-size: 1.1rem; font-weight: 600; color: #040406; }
+    .topbar .env-badge {
+      font-size: .65rem;
+      padding: .2rem .6rem;
+      border-radius: 9999px;
+      background: #114550;
+      color: #E7EDEF;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+    .topbar .topbar-right {
+      display: flex;
+      align-items: center;
+      gap: .6rem;
+    }
+    .logout-btn {
+      border: 1px solid #114550;
+      background: #E7EDEF;
+      color: #040406;
+      border-radius: .4rem;
+      padding: .35rem .65rem;
+      font-size: .75rem;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .logout-btn:hover {
+      background: #114550;
+      color: #E7EDEF;
+    }
+    .content { padding: 1.5rem 2rem; flex: 1; }
+
+    /* ── Cards ─────────────────────────────────────────── */
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+    .kpi-card {
+      background: #fff;
+      border-radius: .5rem;
+      padding: 1.25rem;
+      border: 1px solid #114550;
+    }
+    .kpi-card .label {
+      font-size: .75rem;
+      color: #114550;
+      text-transform: uppercase;
+      letter-spacing: .5px;
+      margin-bottom: .25rem;
+    }
+    .kpi-card .value {
+      font-size: 1.75rem;
+      font-weight: 700;
+      color: #114550;
+    }
+
+    /* ── Table ─────────────────────────────────────────── */
+    .panel {
+      background: #fff;
+      border-radius: .5rem;
+      border: 1px solid #114550;
+      overflow: hidden;
+      margin-bottom: 1.5rem;
+    }
+    .panel-header {
+      padding: 1rem 1.25rem;
+      border-bottom: 1px solid #114550;
+      font-weight: 600;
+      font-size: .95rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: .85rem;
+    }
+    th {
+      text-align: left;
+      padding: .6rem 1rem;
+      background: #E7EDEF;
+      color: #114550;
+      font-weight: 600;
+      font-size: .75rem;
+      text-transform: uppercase;
+      letter-spacing: .3px;
+      border-bottom: 1px solid #114550;
+    }
+    td {
+      padding: .65rem 1rem;
+      border-bottom: 1px solid #E7EDEF;
+      vertical-align: middle;
+    }
+    tr:last-child td { border-bottom: none; }
+    tr:hover { background: #E7EDEF; }
+
+    /* ── Badges ────────────────────────────────────────── */
+    .badge {
+      display: inline-block;
+      padding: .15rem .55rem;
+      border-radius: 9999px;
+      font-size: .7rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: .3px;
+    }
+    .badge-pending,
+    .badge-pending_review { background: #fef3c7; color: #92400e; }
+    .badge-approved,
+    .badge-released,
+    .badge-active    { background: #d1fae5; color: #065f46; }
+    .badge-rejected,
+    .badge-cancelled { background: #fee2e2; color: #991b1b; }
+    .badge-hold,
+    .badge-hold_placed,
+    .badge-accepted  { background: #dbeafe; color: #1e40af; }
+    .badge-pickup_ok { background: #e0e7ff; color: #3730a3; }
+    .badge-delivery_ok { background: #ccfbf1; color: #0f766e; }
+    .badge-expired   { background: #f1f5f9; color: #475569; }
+    .badge-sold      { background: #f3e8ff; color: #6b21a8; }
+    .badge-flagged   { background: #fee2e2; color: #991b1b; }
+    .badge-paused    { background: #fef3c7; color: #92400e; }
+    .badge-demo_credit,
+    .badge-admin_topup { background: #d1fae5; color: #065f46; }
+    .badge-escrow_hold { background: #fee2e2; color: #991b1b; }
+    .badge-escrow_release { background: #dbeafe; color: #1e40af; }
+    .badge-escrow_refund  { background: #fef3c7; color: #92400e; }
+
+    /* ── Buttons ───────────────────────────────────────── */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: .3rem;
+      padding: .35rem .75rem;
+      border: none;
+      border-radius: .35rem;
+      font-size: .78rem;
+      font-weight: 600;
+      cursor: pointer;
+      text-decoration: none;
+      transition: opacity .15s;
+    }
+    .btn:hover { opacity: .85; }
+    .btn-approve { background: #114550; color: #fff; }
+    .btn-reject  { background: #dc2626; color: #fff; }
+    .btn-release { background: #114550; color: #fff; }
+    .btn-refund  { background: #d97706; color: #fff; }
+    .btn-flag    { background: #dc2626; color: #fff; }
+    .btn-unflag  { background: #114550; color: #fff; }
+    .btn-sm { padding: .25rem .5rem; font-size: .72rem; }
+
+    /* ── Forms ─────────────────────────────────────────── */
+    .inline-form { display: inline; }
+
+    /* ── Empty state ───────────────────────────────────── */
+    .empty {
+      text-align: center;
+      padding: 2.5rem 1rem;
+      color: #114550;
+      font-size: .9rem;
+    }
+
+    /* ── Misc ──────────────────────────────────────────── */
+    .text-muted { color: #114550; font-size: .8rem; }
+    .mono { font-family: 'Cascadia Code', 'Fira Code', monospace; font-size: .8rem; }
+    .mt-1 { margin-top: .5rem; }
+    .mb-1 { margin-bottom: .5rem; }
+  </style>
+</head>
+<body>
+
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="brand">
+      <h1>Flyro</h1>
+      <span>Admin Panel</span>
+    </div>
+    <nav>
+      <a href="/admin" class="{% if page == 'dashboard' %}active{% endif %}">
+        <span class="icon">&#9635;</span> Dashboard
+      </a>
+      <a href="/admin/kyc" class="{% if page == 'kyc' %}active{% endif %}">
+        <span class="icon">&#9745;</span> KYC Queue
+      </a>
+      <a href="/admin/trips" class="{% if page == 'trips' %}active{% endif %}">
+        <span class="icon">&#9992;</span> Trips Queue
+      </a>
+      <a href="/admin/bookings" class="{% if page == 'bookings' %}active{% endif %}">
+        <span class="icon">&#128230;</span> Bookings
+      </a>
+      <a href="/admin/wallets" class="{% if page == 'wallets' %}active{% endif %}">
+        <span class="icon">&#128176;</span> Wallets
+      </a>
+      <a href="/admin/marketplace" class="{% if page == 'marketplace' %}active{% endif %}">
+        <span class="icon">&#9733;</span> Marketplace
+      </a>
+      <a href="/admin/audit" class="{% if page == 'audit' %}active{% endif %}">
+        <span class="icon">&#9881;</span> Audit Logs
+      </a>
+      <a href="/admin/flags" class="{% if page == 'flags' %}active{% endif %}">
+        <span class="icon">&#9873;</span> Feature Flags
+      </a>
+      <a href="/admin/users" class="{% if page == 'users' %}active{% endif %}">
+        <span class="icon">&#9823;</span> Users
+      </a>
+    </nav>
+  </aside>
+
+  <!-- Main -->
+  <div class="main">
+    <header class="topbar">
+      <h2>{% block heading %}Admin{% endblock %}</h2>
+      <div class="topbar-right">
+        <span class="env-badge">{{ env }} env</span>
+        <form method="post" action="/admin/logout">
+          <button class="logout-btn" type="submit">Sign Out</button>
+        </form>
+      </div>
+    </header>
+    <div class="content">
+      {% block content %}{% endblock %}
+    </div>
+  </div>
+
+</body>
+</html>

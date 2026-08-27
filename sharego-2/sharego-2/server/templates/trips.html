@@ -1,0 +1,143 @@
+{% extends "base.html" %}
+
+{% block title %}Trips Queue{% endblock %}
+{% block heading %}Trips Queue{% endblock %}
+
+{% block content %}
+<div class="panel">
+  <div class="panel-header">
+    Pending Review
+    <span class="text-muted">{{ pending | length }} pending</span>
+  </div>
+  {% if pending %}
+  <table>
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>User</th>
+        <th>Route</th>
+        <th>Date</th>
+        <th>Airline</th>
+        <th>Flight</th>
+        <th>Capacity</th>
+        <th>Fee</th>
+        <th>Submitted</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for t in pending %}
+      <tr>
+        <td class="mono">#{{ t.id }}</td>
+        <td>{{ t.user_name }}<br><span class="text-muted">{{ t.user_email }}</span></td>
+        <td><strong>{{ t.origin_airport }}</strong> &rarr; <strong>{{ t.dest_airport }}</strong></td>
+        <td>{{ t.date.strftime('%Y-%m-%d') }}</td>
+        <td>{{ t.airline or '—' }}</td>
+        <td class="mono">
+          {{ t.flight_number or '—' }}
+          {% if t.flight_number %}
+          <button class="btn btn-sm" style="margin-left:4px;font-size:.65rem;padding:2px 8px;background:#84AEFE;color:#fff;border:none;border-radius:4px;cursor:pointer" onclick="checkFlight({{ t.id }}, this)">Track</button>
+          <div id="flight-{{ t.id }}" style="display:none;margin-top:4px;font-size:.7rem"></div>
+          {% endif %}
+        </td>
+        <td>{{ t.capacity_kg }} kg</td>
+        <td>{{ 'PKR %s/kg' % t.fee_pkr if t.fee_pkr else '—' }}</td>
+        <td class="text-muted">{{ t.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+        <td>
+          <form class="inline-form" method="POST" action="/admin/trip-action/{{ t.id }}/approve">
+            <button type="submit" class="btn btn-approve btn-sm">Approve</button>
+          </form>
+          <form class="inline-form" method="POST" action="/admin/trip-action/{{ t.id }}/reject" style="margin-top:4px">
+            <input type="text" name="reason" placeholder="Reason (optional)" style="font-size:.72rem;padding:2px 6px;border:1px solid #e2e8f0;border-radius:4px;width:120px;margin-bottom:2px">
+            <button type="submit" class="btn btn-reject btn-sm">Reject</button>
+          </form>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <div class="empty">No trips pending review. All clear!</div>
+  {% endif %}
+</div>
+
+<!-- Approved / Rejected history -->
+<div class="panel">
+  <div class="panel-header">Processed Trips</div>
+  {% if processed %}
+  <table>
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>User</th>
+        <th>Route</th>
+        <th>Date</th>
+        <th>Flight</th>
+        <th>Capacity</th>
+        <th>Status</th>
+        <th>Reason</th>
+        <th>Submitted</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for t in processed %}
+      <tr>
+        <td class="mono">#{{ t.id }}</td>
+        <td>{{ t.user_name }}</td>
+        <td>{{ t.origin_airport }} &rarr; {{ t.dest_airport }}</td>
+        <td>{{ t.date.strftime('%Y-%m-%d') }}</td>
+        <td class="mono">
+          {{ t.flight_number or '—' }}
+          {% if t.flight_number %}
+          <button class="btn btn-sm" style="margin-left:4px;font-size:.65rem;padding:2px 8px;background:#84AEFE;color:#fff;border:none;border-radius:4px;cursor:pointer" onclick="checkFlight({{ t.id }}, this)">Track</button>
+          <div id="flight-{{ t.id }}" style="display:none;margin-top:4px;font-size:.7rem"></div>
+          {% endif %}
+        </td>
+        <td>{{ t.capacity_kg }} kg</td>
+        <td><span class="badge badge-{{ t.status }}">{{ t.status }}</span></td>
+        <td>{{ t.reject_reason or '—' }}</td>
+        <td class="text-muted">{{ t.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <div class="empty">No processed trips yet.</div>
+  {% endif %}
+</div>
+
+<script>
+async function checkFlight(tripId, btn) {
+  const el = document.getElementById('flight-' + tripId);
+  btn.disabled = true;
+  btn.textContent = '...';
+  el.style.display = 'block';
+  el.innerHTML = '<span style="color:#888">Loading...</span>';
+  try {
+    const resp = await fetch('/admin/flight-status/' + tripId);
+    const data = await resp.json();
+    if (data.error) {
+      el.innerHTML = '<span style="color:#e53e3e">' + data.error + '</span>';
+    } else {
+      const st = data.flight_status || 'unknown';
+      const colors = {active:'#38a169',landed:'#38a169',scheduled:'#d69e2e',cancelled:'#e53e3e',diverted:'#e53e3e'};
+      const c = colors[st.toLowerCase()] || '#718096';
+      let html = '<span style="color:' + c + ';font-weight:700">' + st.toUpperCase() + '</span>';
+      if (data.departure && data.departure.iata) {
+        html += '<br>Dep: ' + data.departure.iata + ' ' + (data.departure.scheduled || '--').substring(11,16);
+        if (data.departure.delay) html += ' <span style="color:#e53e3e">+' + data.departure.delay + 'm</span>';
+      }
+      if (data.arrival && data.arrival.iata) {
+        html += '<br>Arr: ' + data.arrival.iata + ' ' + (data.arrival.scheduled || '--').substring(11,16);
+        if (data.arrival.delay) html += ' <span style="color:#e53e3e">+' + data.arrival.delay + 'm</span>';
+      }
+      el.innerHTML = html;
+    }
+  } catch (e) {
+    el.innerHTML = '<span style="color:#e53e3e">Failed to fetch</span>';
+  }
+  btn.textContent = 'Track';
+  btn.disabled = false;
+}
+</script>
+{% endblock %}

@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+
+{% block title %}Marketplace{% endblock %}
+{% block heading %}Marketplace Moderation{% endblock %}
+
+{% block content %}
+<div class="kpi-grid">
+  <div class="kpi-card">
+    <div class="label">Active Listings</div>
+    <div class="value">{{ stats.active }}</div>
+  </div>
+  <div class="kpi-card">
+    <div class="label">Sold</div>
+    <div class="value" style="color: #6b21a8;">{{ stats.sold }}</div>
+  </div>
+  <div class="kpi-card">
+    <div class="label">Paused</div>
+    <div class="value" style="color: #d97706;">{{ stats.paused }}</div>
+  </div>
+  <div class="kpi-card">
+    <div class="label">Flagged</div>
+    <div class="value" style="color: #dc2626;">{{ stats.flagged }}</div>
+  </div>
+</div>
+
+<div class="panel">
+  <div class="panel-header">
+    All Listings
+    <span class="text-muted">{{ listings | length }} shown</span>
+  </div>
+  {% if listings %}
+  <table>
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Title</th>
+        <th>Seller</th>
+        <th>Price</th>
+        <th>Category</th>
+        <th>Status</th>
+        <th>Created</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for l in listings %}
+      <tr>
+        <td class="mono">#{{ l.id }}</td>
+        <td>{{ l.title }}</td>
+        <td class="mono">#{{ l.seller_id }}</td>
+        <td>{{ l.currency }} {{ "%.0f" | format(l.ask_price) }}</td>
+        <td>{{ l.category or '—' }}</td>
+        <td><span class="badge badge-{{ l.status | lower }}">{{ l.status }}</span></td>
+        <td class="text-muted">{{ l.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+        <td>
+          {% if l.status != 'flagged' %}
+            <form class="inline-form" method="POST" action="/admin/market-action/{{ l.id }}/flag">
+              <button type="submit" class="btn btn-flag btn-sm">Flag</button>
+            </form>
+          {% else %}
+            <form class="inline-form" method="POST" action="/admin/market-action/{{ l.id }}/unflag">
+              <button type="submit" class="btn btn-unflag btn-sm">Unflag</button>
+            </form>
+          {% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <div class="empty">No marketplace listings yet.</div>
+  {% endif %}
+</div>
+{% endblock %}

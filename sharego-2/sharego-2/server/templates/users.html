@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+
+{% block title %}Users{% endblock %}
+{% block heading %}Users Management{% endblock %}
+
+{% block content %}
+<div class="kpi-grid">
+  <div class="kpi-card">
+    <div class="label">Total Users</div>
+    <div class="value">{{ users | length }}</div>
+  </div>
+  <div class="kpi-card">
+    <div class="label">KYC Approved</div>
+    <div class="value" style="color:#5B8EFE;">{{ users | selectattr('kyc_status', 'equalto', 'approved') | list | length }}</div>
+  </div>
+  <div class="kpi-card">
+    <div class="label">KYC Pending</div>
+    <div class="value" style="color:#d97706;">{{ users | selectattr('kyc_status', 'equalto', 'pending') | list | length }}</div>
+  </div>
+</div>
+
+<div class="panel">
+  <div class="panel-header">
+    All Users
+    <span class="text-muted">{{ users | length }} records</span>
+  </div>
+  {% if users %}
+  <table>
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Email</th>
+        <th>Name</th>
+        <th>Phone</th>
+        <th>KYC</th>
+        <th>Roles</th>
+        <th>Rating</th>
+        <th>Created</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for u in users %}
+      <tr>
+        <td class="mono">#{{ u.id }}</td>
+        <td class="mono">{{ u.email }}</td>
+        <td>{{ u.name or '—' }}</td>
+        <td class="text-muted">{{ u.phone or '—' }}</td>
+        <td><span class="badge badge-{{ u.kyc_status | lower }}">{{ u.kyc_status }}</span></td>
+        <td class="mono text-muted">{{ u.roles_csv }}</td>
+        <td>{{ "%.1f" | format(u.rating_avg) if u.rating_avg else '—' }}</td>
+        <td class="text-muted">{{ u.created_at.strftime('%Y-%m-%d') if u.created_at else '—' }}</td>
+        <td style="display:flex; gap:.3rem;">
+          {% if 'admin' not in u.roles_csv %}
+          <form method="POST" action="/admin/user-action/{{ u.id }}/make-admin" class="inline-form">
+            <button type="submit" class="btn btn-release btn-sm">Make Admin</button>
+          </form>
+          {% else %}
+          <form method="POST" action="/admin/user-action/{{ u.id }}/remove-admin" class="inline-form">
+            <button type="submit" class="btn btn-reject btn-sm">Remove Admin</button>
+          </form>
+          {% endif %}
+          <form method="POST" action="/admin/user-action/{{ u.id }}/delete" class="inline-form"
+                onsubmit="return confirm('Delete user {{ u.email }}? This cannot be undone.');">
+            <button type="submit" class="btn btn-reject btn-sm" style="background:#dc2626;">Delete</button>
+          </form>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <div class="empty">No users registered yet.</div>
+  {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard{% endblock %}
+{% block heading %}Dashboard{% endblock %}
+
+{% block content %}
+<!-- KPI cards -->
+<div class="kpi-grid">
+  <div class="kpi-card">
+    <div class="label">Total Users</div>
+    <div class="value">{{ stats.total_users }}</div>
+  </div>
+  <div class="kpi-card">
+    <div class="label">Pending KYC</div>
+    <div class="value" style="color: #d97706;">{{ stats.pending_kyc }}</div>
+  </div>
+  <div class="kpi-card">
+    <div class="label">Active Bookings</div>
+    <div class="value">{{ stats.active_bookings }}</div>
+  </div>
+  <div class="kpi-card">
+    <div class="label">Released Bookings</div>
+    <div class="value" style="color: #5B8EFE;">{{ stats.released_bookings }}</div>
+  </div>
+  <div class="kpi-card">
+    <div class="label">Active Listings</div>
+    <div class="value">{{ stats.active_listings }}</div>
+  </div>
+  <div class="kpi-card">
+    <div class="label">Sold Listings</div>
+    <div class="value" style="color: #5B8EFE;">{{ stats.sold_listings }}</div>
+  </div>
+  <div class="kpi-card">
+    <div class="label">Total Reviews</div>
+    <div class="value">{{ stats.total_reviews }}</div>
+  </div>
+  <div class="kpi-card">
+    <div class="label">Audit Events (24h)</div>
+    <div class="value">{{ stats.recent_audit }}</div>
+  </div>
+</div>
+
+<!-- Recent bookings -->
+<div class="panel">
+  <div class="panel-header">Recent Bookings</div>
+  {% if recent_bookings %}
+  <table>
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Trip</th>
+        <th>Request</th>
+        <th>Status</th>
+        <th>Created</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for b in recent_bookings %}
+      <tr>
+        <td class="mono">#{{ b.id }}</td>
+        <td class="mono">#{{ b.trip_id }}</td>
+        <td class="mono">#{{ b.request_id }}</td>
+        <td><span class="badge badge-{{ b.status | lower }}">{{ b.status }}</span></td>
+        <td class="text-muted">{{ b.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <div class="empty">No bookings yet.</div>
+  {% endif %}
+</div>
+
+<!-- Recent listings -->
+<div class="panel">
+  <div class="panel-header">Recent Marketplace Listings</div>
+  {% if recent_listings %}
+  <table>
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Title</th>
+        <th>Price</th>
+        <th>Status</th>
+        <th>Created</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for l in recent_listings %}
+      <tr>
+        <td class="mono">#{{ l.id }}</td>
+        <td>{{ l.title }}</td>
+        <td>{{ l.currency }} {{ "%.0f" | format(l.ask_price) }}</td>
+        <td><span class="badge badge-{{ l.status | lower }}">{{ l.status }}</span></td>
+        <td class="text-muted">{{ l.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <div class="empty">No listings yet.</div>
+  {% endif %}
+</div>
+{% endblock %}
